@@ -40,3 +40,9 @@ Nach der Installation wird das Tool über Command Line aufgerufen.
 cd $SHOPWARE_ROOT/custom/plugins/WbmMyPlugin
 php-cs-fixer fix
 ```
+
+## XML Config Files
+
+Die Konfigurationsdateien `config.xml`, `menu.xml` und `cronjob.xml` werden bei der Installation geparsed. Da der
+Parser bei der Installation mit invaliden Daten Fehler wirft, sind diese Dateien zunächst mit einem Underscore unwirksam gemacht.
+Sie enthalten demonstrative Daten und können durch Entfernung des Underscores im Dateinamen wieder wirksam gemacht werden.
