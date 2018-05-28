@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xsd:element name="attributes" type="attributesType"/>
+
+    <xsd:complexType name="attributesType">
+        <xsd:sequence>
+            <xsd:element name="attribute" type="attributeType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="attributeType">
+        <xsd:sequence>
+            <xsd:element name="table" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="field" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="type" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="label" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="displayInBackend" type="xsd:boolean" minOccurs="1"/>
+            <xsd:element name="position" type="xsd:int" minOccurs="1"/>
+            <xsd:element name="custom" type="xsd:boolean" minOccurs="1"/>
+            <xsd:element name="translatable" type="xsd:boolean" minOccurs="1"/>
+            <xsd:element name="entity" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>
