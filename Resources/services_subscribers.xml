@@ -11,5 +11,9 @@
             <argument type="service" id="template"/>
             <tag name="shopware.event_subscriber"/>
         </service>
+        <service id="wbm_default_plugin.subscriber.command_registration"
+                 class="WbmDefaultPlugin\Subscriber\CommandRegistration">
+            <tag name="shopware.event_subscriber"/>
+        </service>
     </services>
 </container>

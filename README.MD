@@ -2,6 +2,7 @@
 
 Eine Shopware-Plugin Bootstrap mit 
 * Template-Extension
+* CLI Command Boilerplate
 * konventionellen Namespaces
 * Konfigurationsdateien
 * Attribute-Generation on Install/Update via XML Konfiguration
