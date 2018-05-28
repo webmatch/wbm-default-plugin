@@ -21,7 +21,7 @@ cd WbmMyPlugin
 
 `prepare.sh` ausführbar machen und ausführen. Das Script ändert den Default Namen, default service prefixes und
 Snippets ini nach dem Muster des beinhaltenden Verzeichnis. Zb. von `WbmDefaultPlugin` nach `WbmMyPlugin`.
-Außerdem löscht es den `.git` sowie sich selbst.
+Außerdem löscht es den `.git` Folder sowie sich selbst.
 
 ```
 chmod +x ./prepare.sh && ./prepare.sh
