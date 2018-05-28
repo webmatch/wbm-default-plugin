@@ -14,7 +14,7 @@ echo "Changing service prefix from wbm_default_plugin to $SCNAME"
 
 find ./ -not -path '*/\.*' -type f -exec sed -i '' -e "s/wbm_default_plugin/$SCNAME/g" {} \;
 
-echo "Changing snippets init from defaultplugin.ini to $LCNAME.ini"
+echo "Changing snippets ini from defaultplugin.ini to $LCNAME.ini"
 
 mv ./Resources/snippets/frontend/plugins/wbm/defaultplugin.ini ./Resources/snippets/frontend/plugins/wbm/$LCNAME.ini
 
