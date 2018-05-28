@@ -6,6 +6,7 @@ Eine Shopware-Plugin Bootstrap mit
 * Konfigurationsdateien
 * Attribute-Generation on Install/Update via XML Konfiguration
 * Unit-Test bootstrap
+* php-cs-fixer .dist config
 
 ## Bedienung
 
