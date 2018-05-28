@@ -79,8 +79,14 @@ class WbmDefaultPlugin extends Plugin
 
     public function updateAttributes()
     {
+        $xmlPath = $this->getPath() . '/Resources/attributes.xml';
+
+        if (!file_exists($xmlPath)) {
+            return;
+        }
+
         $crudService = $this->container->get('shopware_attribute.crud_service');
-        $attributeXml = file_get_contents($this->getPath() . '/Resources/attributes.xml');
+        $attributeXml = file_get_contents($xmlPath);
         $attributes = simplexml_load_string($attributeXml);
 
         $tables = [];
