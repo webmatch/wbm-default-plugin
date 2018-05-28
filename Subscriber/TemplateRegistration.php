@@ -61,7 +61,9 @@ class TemplateRegistration implements SubscriberInterface
     {
         $less = new LessDefinition(
             [],
-            [],
+            [
+                $this->pluginDirectory . '/Resources/views/frontend/_public/src/less/all.less',
+            ],
             $this->pluginDirectory
         );
 
