@@ -1,0 +1,9 @@
+<?php
+
+namespace WbmDefaultPlugin\Models;
+
+use Shopware\Components\Model\ModelRepository;
+
+class Repository extends ModelRepository
+{
+}

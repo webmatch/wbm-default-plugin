@@ -1,0 +1,21 @@
+<?php
+
+namespace WbmDefaultPlugin\Models;
+
+use Doctrine\ORM\Mapping as ORM;
+use Shopware\Components\Model\ModelEntity;
+
+/**
+ * @ORM\Entity(repositoryClass="Repository")
+ * @ORM\Table(name="default_table")
+ */
+class DefaultModel extends ModelEntity
+{
+    /**
+     * @var int
+     * @ORM\Column(name="id", type="integer", nullable=false)
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="IDENTITY")
+     */
+    protected $id;
+}

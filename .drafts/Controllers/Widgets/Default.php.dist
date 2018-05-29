@@ -1,0 +1,12 @@
+<?php
+
+class Shopware_Controllers_Widgets_Default extends \Enlight_Controller_Action
+{
+    public function preDispatch()
+    {
+    }
+
+    public function indexAction()
+    {
+    }
+}
