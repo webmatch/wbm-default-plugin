@@ -7,7 +7,7 @@ read -p "Create [c]ontroller or [m]odel? " -n 1 -r
 if [ "$REPLY" = "c" ]; then
 
   echo;
-  read -p "Enter name controller name: ";
+  read -p "Enter controller name: ";
 
   CONTROLLER="$(tr '[:lower:]' '[:upper:]' <<< ${REPLY:0:1})${REPLY:1}";
 
