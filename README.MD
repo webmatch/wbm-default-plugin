@@ -33,7 +33,7 @@ chmod +x ./prepare.sh && ./prepare.sh
 PHP Coding Standards Fixer stellt die Einhaltung von Coding Standards sicher. Es richtet sich dabei
 nach den Regeln definiert in der Konfigurationsdatei `.php_cs.dist`
 
-[Installation via homebrow](https://github.com/FriendsOfPHP/PHP-CS-Fixer#globally-homebrew)
+[Installation via homebrew](https://github.com/FriendsOfPHP/PHP-CS-Fixer#globally-homebrew)
 
 Nach der Installation wird das Tool über Command Line aufgerufen.
 
