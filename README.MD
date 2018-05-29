@@ -31,7 +31,7 @@ chmod +x ./prepare.sh && ./prepare.sh
 ## php-cs-fixer
 
 PHP Coding Standards Fixer stellt die Einhaltung von Coding Standards sicher. Es richtet sich dabei
-nach den Regeln definiert in der Konfigurationsdatei .php_cs.dist`
+nach den Regeln definiert in der Konfigurationsdatei `.php_cs.dist`
 
 [Installation via homebrow](https://github.com/FriendsOfPHP/PHP-CS-Fixer#globally-homebrew)
 
@@ -47,3 +47,16 @@ php-cs-fixer fix
 Die Konfigurationsdateien `config.xml`, `menu.xml` und `cronjob.xml` werden bei der Installation geparsed. Da der
 Parser bei der Installation mit invaliden Daten Fehler wirft, sind diese Dateien zunächst mit einem Underscore unwirksam gemacht.
 Sie enthalten demonstrative Daten und können durch Entfernung des Underscores im Dateinamen wieder wirksam gemacht werden.
+
+## create.sh
+
+Das Shell-Script `create.sh` ermöglicht die beschleunigte Erstellung von Boilerplate code für neue Controller und Models.
+
+`create.sh` ausführbar machen und ausführen:
+
+```
+chmod +x ./create.sh && ./create.sh
+```
+
+Auf Basis der darauf folgenden Prompts und der in `.drafts` befindlichen Vorlagen wird der Boileplate Code in den
+konventionellen Verzeichnissen und mit den angegebenen Klassen-Namen und Namespaces angelegt.
