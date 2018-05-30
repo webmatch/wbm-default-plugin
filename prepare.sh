@@ -18,7 +18,8 @@ echo "Changing snippets ini from defaultplugin.ini to $LCNAME.ini"
 
 mv ./Resources/snippets/frontend/plugins/wbm/defaultplugin.ini ./Resources/snippets/frontend/plugins/wbm/$LCNAME.ini
 
-echo "Removing .git directory and prepare.sh"
+echo "Removing .git directory, README.MD and prepare.sh"
 
 rm -rf ./.git
+rm ./README.MD
 rm ./prepare.sh
