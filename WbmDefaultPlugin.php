@@ -2,6 +2,7 @@
 
 namespace WbmDefaultPlugin;
 
+use Doctrine\ORM\Tools\SchemaTool;
 use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
@@ -34,6 +35,8 @@ class WbmDefaultPlugin extends Plugin
     {
         $sql = file_get_contents($this->getPath() . '/Resources/sql/install.sql');
         $this->container->get('shopware.db')->query($sql);
+
+        $this->addSchema();
 
         $this->updateAttributes();
 
@@ -116,5 +119,24 @@ class WbmDefaultPlugin extends Plugin
         }
 
         $this->container->get('models')->generateAttributeModels($tables);
+    }
+
+    public function addSchema()
+    {
+        $tool = new SchemaTool(Shopware()->Container()->get('models'));
+        $schemas = [
+//            Shopware()->Container()->get('models')->getClassMetadata(PluginName\Models\Classname::class),
+//            Shopware()->Container()->get('models')->getClassMetadata(PluginName\Models\Classname::class),
+        ];
+
+        /** @var MySqlSchemaManager $schemaManager */
+        $schemaManager = Shopware()->Container()->get('models')->getConnection()->getSchemaManager();
+        foreach ($schemas as $class) {
+            if (!$schemaManager->tablesExist($class->getTableName())) {
+                $tool->createSchema([$class]);
+            } else {
+                $tool->updateSchema([$class], true); //true - saveMode and not delete other schemas
+            }
+        }
     }
 }
