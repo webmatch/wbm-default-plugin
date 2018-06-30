@@ -30,6 +30,8 @@ class WbmDefaultPlugin extends Plugin
 
     /**
      * {@inheritdoc}
+     *
+     * @throws \Exception
      */
     public function install(InstallContext $context)
     {
@@ -53,6 +55,8 @@ class WbmDefaultPlugin extends Plugin
 
     /**
      * {@inheritdoc}
+     *
+     * @throws \Exception
      */
     public function update(UpdateContext $context)
     {
@@ -63,6 +67,8 @@ class WbmDefaultPlugin extends Plugin
 
     /**
      * {@inheritdoc}
+     *
+     * @throws \Exception
      */
     public function uninstall(UninstallContext $context)
     {
@@ -80,6 +86,9 @@ class WbmDefaultPlugin extends Plugin
         parent::deactivate($context);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function updateAttributes()
     {
         $xmlPath = $this->getPath() . '/Resources/attributes.xml';
@@ -121,16 +130,19 @@ class WbmDefaultPlugin extends Plugin
         $this->container->get('models')->generateAttributeModels($tables);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function addSchema()
     {
-        $tool = new SchemaTool(Shopware()->Container()->get('models'));
+        $tool = new SchemaTool($this->container->get('models'));
         $schemas = [
-//            Shopware()->Container()->get('models')->getClassMetadata(PluginName\Models\Classname::class),
-//            Shopware()->Container()->get('models')->getClassMetadata(PluginName\Models\Classname::class),
+//            $this->container->get('models')->getClassMetadata(PluginName\Models\Classname::class),
+//            $this->container->get('models')->getClassMetadata(PluginName\Models\Classname::class),
         ];
 
-        /** @var MySqlSchemaManager $schemaManager */
-        $schemaManager = Shopware()->Container()->get('models')->getConnection()->getSchemaManager();
+        /** @var \Doctrine\DBAL\Schema\MySqlSchemaManager $schemaManager */
+        $schemaManager = $this->container->get('dbal_connection')->getSchemaManager();
         foreach ($schemas as $class) {
             if (!$schemaManager->tablesExist($class->getTableName())) {
                 $tool->createSchema([$class]);
