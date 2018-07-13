@@ -9,6 +9,7 @@ use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Plugin\Context\UpdateContext;
+use Symfony\Component\Config\Util\XmlUtils;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
@@ -41,6 +42,7 @@ class WbmDefaultPlugin extends Plugin
         $this->addSchema();
 
         $this->updateAttributes();
+        $this->updateEmotions();
 
         parent::install($context);
     }
@@ -97,37 +99,90 @@ class WbmDefaultPlugin extends Plugin
             return;
         }
 
+        try {
+            $dom = XmlUtils::loadFile($xmlPath, $this->getPath() . '/Resources/schema/attributes.xsd');
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException(sprintf('Unable to parse file "%s". Message: %s', $xmlPath, $e->getMessage()), $e->getCode(), $e);
+        }
+        $attributes = XmlUtils::convertDomElementToArray($dom->getElementsByTagName('attributes')->item(0));
         $crudService = $this->container->get('shopware_attribute.crud_service');
-        $attributeXml = file_get_contents($xmlPath);
-        $attributes = simplexml_load_string($attributeXml);
 
         $tables = [];
 
-        foreach ($attributes as $attribute) {
-            $table = utf8_encode($attribute->table);
+        foreach ($attributes['attribute'] as $attribute) {
+            $table = $attribute['table'];
             if (!in_array($table, $tables)) {
                 $tables[] = $table;
             }
 
-            $arrayStore = (array) $attribute->arrayStore;
-
             $crudService->update(
                 $table,
-                utf8_encode($attribute->field),
-                utf8_encode($attribute->type),
+                $attribute['field'],
+                $attribute['type'],
                 [
-                    'label'            => $attribute->label,
-                    'displayInBackend' => filter_var($attribute->displayInBackend, FILTER_VALIDATE_BOOLEAN),
-                    'position'         => (int) $attribute->position,
-                    'custom'           => filter_var($attribute->custom, FILTER_VALIDATE_BOOLEAN),
-                    'translatable'     => filter_var($attribute->translatable, FILTER_VALIDATE_BOOLEAN),
-                    'entity'           => utf8_encode($attribute->entity),
-                    'arrayStore'       => isset($arrayStore['option']) ? $arrayStore['option'] : null,
+                    'label'            => $attribute['label'],
+                    'displayInBackend' => $attribute['displayInBackend'],
+                    'position'         => $attribute['position'],
+                    'custom'           => $attribute['custom'],
+                    'translatable'     => $attribute['translatable'],
+                    'entity'           => $attribute['entity'],
+                    'arrayStore'       => isset($attribute['arrayStore']['option']) ? $attribute['arrayStore']['option'] : null,
                 ]
             );
         }
 
         $this->container->get('models')->generateAttributeModels($tables);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function updateEmotions()
+    {
+        $xmlPath = $this->getPath() . '/Resources/emotions.xml';
+
+        if (!file_exists($xmlPath)) {
+            return;
+        }
+
+        try {
+            $dom = XmlUtils::loadFile($xmlPath, $this->getPath() . '/Resources/schema/emotions.xsd');
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException(sprintf('Unable to parse file "%s". Message: %s', $xmlPath, $e->getMessage()), $e->getCode(), $e);
+        }
+        $emotions = XmlUtils::convertDomElementToArray($dom->getElementsByTagName('emotions')->item(0));
+        $componentInstaller = $component = $this->container->get('shopware.emotion_component_installer');
+
+        foreach ($emotions['emotion'] as $emotion) {
+            $component = $componentInstaller->createOrUpdate(
+                $this->getName(),
+                $emotion['name'],
+                [
+                    'name' => $emotion['name'],
+                    'xtype' => $emotion['xtype'],
+                    'template' => $emotion['template'],
+                    'cls' => $emotion['cls'],
+                    'description' => $emotion['description'],
+                ]
+            );
+
+            foreach ($emotion['fields']['field'] as $field) {
+                $component->{$field['method']}(
+                    [
+                        'name' => $field['name'],
+                        'fieldLabel' => $field['fieldLabel'] ?: '',
+                        'allowBlank' => $field['allowBlank'],
+                        'defaultValue' => $field['defaultValue'] ?: '',
+                        'supportText' => $field['supportText'] ?: '',
+                        'store' => $field['store'] ?: '',
+                        'displayField' => $field['displayField'] ?: '',
+                        'valueField' => $field['valueField'] ?: '',
+                        'helpTitle' => $field['helpTitle'] ?: '',
+                        'helpText' => $field['helpText'] ?: '',
+                    ]
+                );
+            }
+        }
     }
 
     /**

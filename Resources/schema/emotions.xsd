@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xsd:element name="emotions" type="emotionsType"/>
+
+    <xsd:complexType name="emotionsType">
+        <xsd:sequence>
+            <xsd:element name="emotion" type="emotionType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="emotionType">
+        <xsd:sequence>
+            <xsd:element name="name" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="xtype" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="template" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="cls" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="description" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="fields" type="fieldsType" minOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="fieldsType">
+        <xsd:sequence>
+            <xsd:element name="field" type="fieldType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="fieldType">
+        <xsd:sequence>
+            <xsd:element name="method" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="fieldLabel" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="allowBlank" type="xsd:boolean" minOccurs="1"/>
+            <xsd:element name="defaultValue" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="supportText" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="store" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="displayField" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="valueField" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="helpTitle" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="helpText" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>
