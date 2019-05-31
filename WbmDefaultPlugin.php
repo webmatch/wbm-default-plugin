@@ -3,12 +3,16 @@
 namespace WbmDefaultPlugin;
 
 use Doctrine\ORM\Tools\SchemaTool;
+use Shopware\Bundle\AttributeBundle\Service\CrudService;
+use Shopware\Components\Model\ModelManager;
 use Shopware\Components\Plugin;
 use Shopware\Components\Plugin\Context\ActivateContext;
 use Shopware\Components\Plugin\Context\DeactivateContext;
 use Shopware\Components\Plugin\Context\InstallContext;
 use Shopware\Components\Plugin\Context\UninstallContext;
 use Shopware\Components\Plugin\Context\UpdateContext;
+use Shopware\Models\Mail\Mail;
+use Shopware\Models\Mail\Repository;
 use Symfony\Component\Config\Util\XmlUtils;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
@@ -43,6 +47,7 @@ class WbmDefaultPlugin extends Plugin
 
         $this->updateAttributes();
         $this->updateEmotions();
+        $this->addMailTemplates();
 
         parent::install($context);
     }
@@ -74,8 +79,13 @@ class WbmDefaultPlugin extends Plugin
      */
     public function uninstall(UninstallContext $context)
     {
-        $sql = file_get_contents($this->getPath() . '/Resources/sql/uninstall.sql');
-        $this->container->get('shopware.db')->query($sql);
+        if (!$context->keepUserData()) {
+            $sql = file_get_contents($this->getPath() . '/Resources/sql/uninstall.sql');
+            $this->container->get('shopware.db')->query($sql);
+            $this->removeMailTemplates();
+            $this->removeSchema();
+            $this->removeAttributes();
+        }
 
         parent::uninstall($context);
     }
@@ -89,29 +99,46 @@ class WbmDefaultPlugin extends Plugin
     }
 
     /**
+     * @param $schemaName
+     * @param $node
+     *
+     * @return array|void
+     */
+    public function loadXMLSchema($schemaName, $node)
+    {
+        $xmlPath = $this->getPath() . '/Resources/' . $schemaName . '.xml';
+        if (!file_exists($xmlPath)) {
+            return;
+        }
+        try {
+            $dom = XmlUtils::loadFile($xmlPath, $this->getPath() . '/Resources/schema/' . $schemaName . '.xsd');
+        } catch (\Exception $e) {
+            throw new \InvalidArgumentException(sprintf('Unable to parse file "%s". Message: %s', $xmlPath, $e->getMessage()), $e->getCode(), $e);
+        }
+        $elements = XmlUtils::convertDomElementToArray($dom->getElementsByTagName($schemaName)->item(0));
+
+        if($elements === null){
+            return [];
+        }
+
+        return isset($elements[$node][0]) ? $elements[$node] : [$elements[$node]];
+    }
+
+    /**
      * @throws \Exception
      */
     public function updateAttributes()
     {
-        $xmlPath = $this->getPath() . '/Resources/attributes.xml';
+        $attributes = $this->loadXMLSchema('attributes', 'attribute');
 
-        if (!file_exists($xmlPath)) {
-            return;
-        }
-
-        try {
-            $dom = XmlUtils::loadFile($xmlPath, $this->getPath() . '/Resources/schema/attributes.xsd');
-        } catch (\Exception $e) {
-            throw new \InvalidArgumentException(sprintf('Unable to parse file "%s". Message: %s', $xmlPath, $e->getMessage()), $e->getCode(), $e);
-        }
-        $attributes = XmlUtils::convertDomElementToArray($dom->getElementsByTagName('attributes')->item(0));
+        /** @var CrudService $crudService */
         $crudService = $this->container->get('shopware_attribute.crud_service');
 
         $tables = [];
 
-        foreach ($attributes['attribute'] as $attribute) {
+        foreach ($attributes as $attribute) {
             $table = $attribute['table'];
-            if (!in_array($table, $tables)) {
+            if (!in_array($table, $tables, true)) {
                 $tables[] = $table;
             }
 
@@ -137,23 +164,28 @@ class WbmDefaultPlugin extends Plugin
     /**
      * @throws \Exception
      */
+    public function removeAttributes()
+    {
+        $attributes = $this->loadXMLSchema('attributes', 'attribute');
+
+        /** @var CrudService $crudService */
+        $crudService = $this->container->get('shopware_attribute.crud_service');
+
+        foreach ($attributes as $attribute) {
+            $crudService->delete($attribute['table'], $attribute['field']);
+        }
+    }
+
+    /**
+     * @throws \Exception
+     */
     private function updateEmotions()
     {
-        $xmlPath = $this->getPath() . '/Resources/emotions.xml';
+        $emotions = $this->loadXMLSchema('emotions', 'emotion');
 
-        if (!file_exists($xmlPath)) {
-            return;
-        }
-
-        try {
-            $dom = XmlUtils::loadFile($xmlPath, $this->getPath() . '/Resources/schema/emotions.xsd');
-        } catch (\Exception $e) {
-            throw new \InvalidArgumentException(sprintf('Unable to parse file "%s". Message: %s', $xmlPath, $e->getMessage()), $e->getCode(), $e);
-        }
-        $emotions = XmlUtils::convertDomElementToArray($dom->getElementsByTagName('emotions')->item(0));
         $componentInstaller = $component = $this->container->get('shopware.emotion_component_installer');
 
-        foreach ($emotions['emotion'] as $emotion) {
+        foreach ($emotions as $emotion) {
             $component = $componentInstaller->createOrUpdate(
                 $this->getName(),
                 $emotion['name'],
@@ -204,6 +236,117 @@ class WbmDefaultPlugin extends Plugin
             } else {
                 $tool->updateSchema([$class], true); //true - saveMode and not delete other schemas
             }
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function removeSchema()
+    {
+        $tool = new SchemaTool($this->container->get('models'));
+        $schemas = [
+//            $this->container->get('models')->getClassMetadata(PluginName\Models\Classname::class),
+//            $this->container->get('models')->getClassMetadata(PluginName\Models\Classname::class),
+        ];
+
+        $tool->dropSchema($schemas);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function addMailTemplates()
+    {
+        $mails = $this->loadXMLSchema('mails', 'mail');
+
+        /** @var ModelManager $modelManager */
+        $modelManager = $this->container->get('models');
+
+        /** @var Repository $mailRepository */
+        $mailRepository = $modelManager->getRepository(Mail::class);
+
+        foreach ($mails as $mail) {
+            if ($mailRepository->findOneBy(['name' => $mail['name']]) === null) {
+                $mailModel = new Mail();
+                $mailModel->setName($mail['name']);
+                $mailModel->setFromMail($mail['fromMail']);
+                $mailModel->setFromName($mail['fromName']);
+                $mailModel->setSubject($mail['subject']);
+                $mailModel->setContent($mail['content']);
+                $mailModel->setMailtype($mail['mailType']);
+
+                if (!empty($mail['contentHTML'])) {
+                    $mailModel->setContentHtml($mail['contentHTML']);
+                }
+
+                if ($mail['isHTML']) {
+                    $mailModel->setIsHtml();
+                }
+
+                $modelManager->persist($mailModel);
+                $modelManager->flush($mailModel);
+
+                if (!empty($mail['translations'])) {
+                    $this->addMailTranslation($mailRepository->findOneBy(['name' => $mail['name']])->getId(), $mail['translations']);
+                }
+            }
+        }
+    }
+
+    /**
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function removeMailTemplates()
+    {
+        $mails = $this->loadXMLSchema('mails', 'mail');
+
+        /** @var ModelManager $modelManager */
+        $modelManager = $this->container->get('models');
+
+        /** @var Repository $mailRepository */
+        $mailRepository = $modelManager->getRepository(Mail::class);
+
+        foreach ($mails as $mail) {
+            /** @var Mail $mailModel */
+            $mailModel = $mailRepository->findOneBy(['name' => $mail['name']]);
+
+            if (!empty($mail['translations'])) {
+                $this->removeMailTranslation($mailModel->getId(), $mail['translations']);
+            }
+
+            $modelManager->remove($mailModel);
+        }
+        $modelManager->flush();
+    }
+
+    /**
+     * @param $key
+     * @param $translations
+     */
+    public function addMailTranslation($key, $translations)
+    {
+        $translationService = $this->container->get('translation');
+
+        $translations['translation'] = isset($translations['translation'][0]) ? $translations['translation'] : [$translations['translation']];
+
+        foreach ($translations['translation'] as $data) {
+            $translationService->write($data['shopId'], 'config_mails', $key, $data);
+        }
+    }
+
+    /**
+     * @param $key
+     * @param $translations
+     */
+    public function removeMailTranslation($key, $translations)
+    {
+        $translationService = $this->container->get('translation');
+
+        $translations['translation'] = isset($translations['translation'][0]) ? $translations['translation'] : [$translations['translation']];
+
+        foreach ($translations['translation'] as $data) {
+            $translationService->delete($data['shopId'], 'config_mails', $key);
         }
     }
 }

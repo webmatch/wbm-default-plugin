@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+
+    <xsd:element name="mails" type="mailsType"/>
+
+    <xsd:complexType name="mailsType">
+        <xsd:sequence>
+            <xsd:element name="mail" type="mailType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="mailType">
+        <xsd:sequence>
+            <xsd:element name="mailType" type="mailTypeType" minOccurs="1"/>
+            <xsd:element name="name" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="fromName" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="fromMail" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="subject" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="content" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="contentHTML" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="isHTML" type="xsd:boolean" minOccurs="0"/>
+            <xsd:element name="translations" type="translationsType" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:simpleType name="mailTypeType">
+        <xsd:restriction base="xsd:integer">
+            <xsd:enumeration value="1" />
+            <xsd:enumeration value="2" />
+            <xsd:enumeration value="3" />
+            <xsd:enumeration value="4" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="translationsType">
+        <xsd:sequence>
+            <xsd:element name="translation" type="translationType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="translationType">
+        <xsd:sequence>
+            <xsd:element name="shopId" type="xsd:integer" minOccurs="1"/>
+            <xsd:element name="fromName" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="fromMail" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="subject" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="content" type="xsd:string" minOccurs="1"/>
+            <xsd:element name="contentHTML" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>
