@@ -42,9 +42,7 @@ class WbmDefaultPlugin extends Plugin
     {
         $sql = file_get_contents($this->getPath() . '/Resources/sql/install.sql');
         $this->container->get('shopware.db')->query($sql);
-
         $this->addSchema();
-
         $this->updateAttributes();
         $this->updateEmotions();
         $this->addMailTemplates();
@@ -117,7 +115,7 @@ class WbmDefaultPlugin extends Plugin
         }
         $elements = XmlUtils::convertDomElementToArray($dom->getElementsByTagName($schemaName)->item(0));
 
-        if($elements === null){
+        if ($elements === null) {
             return [];
         }
 
@@ -323,6 +321,8 @@ class WbmDefaultPlugin extends Plugin
     /**
      * @param $key
      * @param $translations
+     *
+     * @throws \Zend_Db_Adapter_Exception
      */
     public function addMailTranslation($key, $translations)
     {
